@@ -6,11 +6,10 @@ import users from "./routes/users.js";
 import swapRequests from "./routes/swapRequests.js";
 import messages from "./routes/messages.js";
 
+const app = express();
 app.get('/', (req, res) => {
   res.send('Backend API is running!');
 });
-
-const app = express();
 app.use(cors());
 app.use(express.json());
 app.get("/api/health", (req, res) => res.json({ message: "Swaplify API is running" }));
