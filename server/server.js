@@ -6,6 +6,10 @@ import users from "./routes/users.js";
 import swapRequests from "./routes/swapRequests.js";
 import messages from "./routes/messages.js";
 
+app.get('/', (req, res) => {
+  res.send('Backend API is running!');
+});
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -14,7 +18,7 @@ app.use("/api/users", users);
 app.use("/api/messages", messages);
 app.use("/api/swap-requests", swapRequests);
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 10000;
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => app.listen(port, () => console.log(`API running on port ${port}`)))
   .catch(error => { console.error("Could not connect to MongoDB:", error.message); process.exit(1); });
