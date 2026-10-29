@@ -11,8 +11,9 @@ app.use(cors());
 app.use(express.json());
 app.get("/api/health", (req, res) => res.json({ message: "Swaplify API is running" }));
 app.use("/api/users", users);
-app.use("/api/swap-requests", swapRequests);
 app.use("/api/messages", messages);
+app.use("/api/swap-requests", swapRequests);
+
 const port = process.env.PORT || 5000;
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => app.listen(port, () => console.log(`API running on port ${port}`)))
