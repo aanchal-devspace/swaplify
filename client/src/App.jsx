@@ -2,7 +2,7 @@ import React from "react";
 import { useMemo, useState } from "react";
 import { peers } from "./data";
 import PeerCard from "./components/PeerCard";
-import Dashboard from "./components/Dashboard.jsx";
+import Dashboard from "./components/dashboard.jsx";
 import Chat from "./components/Chat";
 
 // ---- Backend settings: change these to match your backend routes ----

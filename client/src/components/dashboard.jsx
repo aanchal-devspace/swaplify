@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import "./Dashboard.css";
+import ".dashboard.css";
 import "./DashboardActions.css";
 
 const idOf = value => (typeof value === "string" ? value : value?._id);
