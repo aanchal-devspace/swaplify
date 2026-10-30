@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import "./Chat.css";
+import "./chat.css";
 
 const idOf = value => typeof value === "string" ? value : value?._id;
 const initials = name => name?.split(" ").map(part => part[0]).join("").slice(0, 2) || "?";
