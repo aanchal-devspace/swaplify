@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import "./Dashboard.css";
+import "./DashboardActions.css";
 
 const idOf = value => (typeof value === "string" ? value : value?._id);
 const titleCase = value => value?.charAt(0).toUpperCase() + value?.slice(1);
 
-export default function Dashboard({ user, apiUrl, onLogout, onDiscover }) {
+export default function Dashboard({ user, apiUrl, onLogout, onDiscover, onOpenChat }) {
   const [peers, setPeers] = useState([]);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +98,7 @@ export default function Dashboard({ user, apiUrl, onLogout, onDiscover }) {
   return <div className="dashboard-page">
     <nav>
       <a className="brand" href="#dashboard"><span>↔</span> swaplify</a>
-      <div className="nav-links"><button className="nav-action" onClick={onDiscover}>Discover</button><span>Hi, {user.name}</span><button className="login" onClick={onLogout}>Log out</button></div>
+      <div className="nav-links"><button className="nav-action" onClick={onDiscover}>Discover</button><button className="nav-action" onClick={() => onOpenChat()}>Messages</button><span>Hi, {user.name}</span><button className="login" onClick={onLogout}>Log out</button></div>
     </nav>
     <main className="dashboard" id="dashboard">
       <section className="dashboard-intro"><div><p className="eyebrow">YOUR LEARNING SPACE</p><h1>Welcome back, {user.name?.split(" ")[0] || "learner"}.</h1><p>Find a learning partner, manage your requests, and keep your skill journey moving.</p></div><button className="primary" onClick={onDiscover}>Explore all peers <span>→</span></button></section>
@@ -110,10 +111,10 @@ export default function Dashboard({ user, apiUrl, onLogout, onDiscover }) {
             <div className="suggestion-top"><div className="profile-avatar">{peer.name?.split(" ").map(part => part[0]).join("").slice(0, 2)}</div><div><h3>{peer.name}</h3><p>{peer.bio || "Skill exchanger"}</p></div></div>
             <p className="skill-label">Can teach</p><div className="dashboard-tags">{tags(peer.skillsOffered || [], "teach", "No skills added")}</div>
             <p className="skill-label">Wants to learn</p><div className="dashboard-tags">{tags(peer.skillsWanted || [], "wants", "No skills added")}</div>
-            <button className="outline request-button" onClick={() => setSelectedPeer(peer)}>Request a swap</button>
+            <div className="suggestion-actions"><button className="outline request-button" onClick={() => onOpenChat(peer)}>Message</button><button className="outline request-button" onClick={() => setSelectedPeer(peer)}>Request a swap</button></div>
           </article>)}</div> : <p className="dashboard-empty">No suggestions yet. Ask more people to join Swaplify.</p>}
-          <RequestList title="Requests received" label="INCOMING" count={received.length} requests={received} type="received" onUpdate={updateRequest} />
-          <RequestList title="Requests sent" label="OUTGOING" count={sent.length} requests={sent} type="sent" onUpdate={updateRequest} />
+          <RequestList title="Requests received" label="INCOMING" count={received.length} requests={received} type="received" onUpdate={updateRequest} onOpenChat={onOpenChat} />
+          <RequestList title="Requests sent" label="OUTGOING" count={sent.length} requests={sent} type="sent" onUpdate={updateRequest} onOpenChat={onOpenChat} />
         </section>
         <aside className="profile-panel"><p className="eyebrow">YOUR PROFILE</p><div className="large-profile-avatar">{user.name?.split(" ").map(part => part[0]).join("").slice(0, 2) || "Y"}</div><h2>{user.name}</h2><p className="profile-email">{user.email}</p>{user.bio && <p className="profile-bio">{user.bio}</p>}<div className="profile-divider" /><p className="skill-label">You can teach</p><div className="dashboard-tags">{tags(offeredSkills, "teach", "Add skills to improve your matches.")}</div><p className="skill-label">You want to learn</p><div className="dashboard-tags">{tags(wantedSkills, "wants", "Add learning goals to get suggestions.")}</div><div className="profile-stats"><div><strong>{sent.length}</strong><span>Sent</span></div><div><strong>{received.length}</strong><span>Received</span></div><div><strong>{user.rating || "New"}</strong><span>Rating</span></div></div></aside>
       </div>
@@ -122,6 +123,6 @@ export default function Dashboard({ user, apiUrl, onLogout, onDiscover }) {
   </div>;
 }
 
-function RequestList({ title, label, count, requests, type, onUpdate }) {
-  return <section className="request-section"><div className="dashboard-heading"><div><p className="eyebrow">{label}</p><h2>{title}</h2></div><span className="request-count">{count}</span></div>{requests.length ? <div className="request-list">{requests.map(request => <article className="request-card" key={request._id}><div><h3>{type === "sent" ? `To ${request.toUser?.name || "a Swaplify member"}` : request.fromUser?.name || "A Swaplify member"}</h3><p>{request.message}</p><small>Sent {new Date(request.createdAt).toLocaleDateString()}</small></div>{type === "received" && request.status === "pending" ? <div className="request-actions"><button className="accept" onClick={() => onUpdate(request._id, "accepted")}>Accept</button><button className="decline" onClick={() => onUpdate(request._id, "declined")}>Decline</button></div> : <span className={`status ${request.status}`}>{titleCase(request.status)}</span>}</article>)}</div> : <p className="dashboard-empty">{type === "sent" ? "You have not sent a request yet." : "No one has sent you a request yet."}</p>}</section>;
+function RequestList({ title, label, count, requests, type, onUpdate, onOpenChat }) {
+  return <section className="request-section"><div className="dashboard-heading"><div><p className="eyebrow">{label}</p><h2>{title}</h2></div><span className="request-count">{count}</span></div>{requests.length ? <div className="request-list">{requests.map(request => { const peer = type === "sent" ? request.toUser : request.fromUser; return <article className="request-card" key={request._id}><div><h3>{type === "sent" ? `To ${peer?.name || "a Swaplify member"}` : peer?.name || "A Swaplify member"}</h3><p>{request.message}</p><small>Sent {new Date(request.createdAt).toLocaleDateString()}</small></div><div className="request-card-footer"><button className="outline message-button" disabled={!peer?._id} onClick={() => onOpenChat(peer, request)}>Message</button>{type === "received" && request.status === "pending" ? <div className="request-actions"><button className="accept" onClick={() => onUpdate(request._id, "accepted")}>Accept</button><button className="decline" onClick={() => onUpdate(request._id, "declined")}>Decline</button></div> : <span className={`status ${request.status}`}>{titleCase(request.status)}</span>}</div></article>})}</div> : <p className="dashboard-empty">{type === "sent" ? "You have not sent a request yet." : "No one has sent you a request yet."}</p>}</section>;
 }

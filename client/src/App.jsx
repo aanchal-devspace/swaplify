@@ -2,7 +2,8 @@ import React from "react";
 import { useMemo, useState } from "react";
 import { peers } from "./data";
 import PeerCard from "./components/PeerCard";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./components/Dashboard.jsx";
+import Chat from "./components/Chat";
 
 // ---- Backend settings: change these to match your backend routes ----
 const API_URL = import.meta.env.VITE_API_URL || "https://swaplify-3.onrender.com";
@@ -28,6 +29,7 @@ export default function App() {
     }
   });
   const [activeView, setActiveView] = useState(() => user ? "dashboard" : "landing");
+  const [selectedChat, setSelectedChat] = useState(null);
 
   const matchingPeers = useMemo(
     () =>
@@ -97,10 +99,20 @@ export default function App() {
     } catch {}
     setUser(null);
     setActiveView("landing");
+    setSelectedChat(null);
   };
 
+  const openChat = (peer = null, swapRequest = null) => {
+    setSelectedChat({ peer, swapRequest });
+    setActiveView("messages");
+  };
+
+  if (user && activeView === "messages") {
+    return <Chat user={user} apiUrl={API_URL} initialPeer={selectedChat?.peer} initialSwapRequest={selectedChat?.swapRequest} onBack={() => setActiveView("dashboard")} onLogout={logout} />;
+  }
+
   if (user && activeView === "dashboard") {
-    return <Dashboard user={user} apiUrl={API_URL} onLogout={logout} onDiscover={() => setActiveView("landing")} />;
+    return <Dashboard user={user} apiUrl={API_URL} onLogout={logout} onDiscover={() => setActiveView("landing")} onOpenChat={openChat} />;
   }
 
   return <>
@@ -112,6 +124,7 @@ export default function App() {
         {user ? <>
           <span>Hi, {user.name || user.email}</span>
           <button className="login" onClick={() => setActiveView("dashboard")}>Dashboard</button>
+          <button className="login" onClick={() => openChat()}>Messages</button>
           <button className="login" onClick={logout}>Log out</button>
         </> : <>
           <button className="login" onClick={() => openAuth("login")}>Log in</button>
