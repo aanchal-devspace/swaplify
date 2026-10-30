@@ -2,20 +2,21 @@ import React from "react";
 import { useMemo, useState } from "react";
 import { peers } from "./data";
 import PeerCard from "./components/PeerCard";
+import Dashboard from "./components/Dashboard";
 
-
+// ---- Backend settings: change these to match your backend routes ----
 const API_URL = import.meta.env.VITE_API_URL || "https://swaplify-3.onrender.com";
 const LOGIN_PATH = "/api/users/login";
 const SIGNUP_PATH = "/api/users/register";
-
+// ----------------------------------------------------------------------
 
 export default function App() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
   const [sent, setSent] = useState(false);
 
-  
-  const [authMode, setAuthMode] = useState(null);
+  // Auth state
+  const [authMode, setAuthMode] = useState(null); // null | "login" | "signup"
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [authError, setAuthError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,6 +27,7 @@ export default function App() {
       return null;
     }
   });
+  const [activeView, setActiveView] = useState(() => user ? "dashboard" : "landing");
 
   const matchingPeers = useMemo(
     () =>
@@ -80,8 +82,9 @@ export default function App() {
       } catch {}
       setUser(loggedIn);
       closeAuth();
+      setActiveView("dashboard");
     } catch {
-      setAuthError("Could not reach the server. Is the backend running on port 8000?");
+      setAuthError("Could not reach the server. Is the backend running on port 10000?");
     } finally {
       setLoading(false);
     }
@@ -93,7 +96,12 @@ export default function App() {
       localStorage.removeItem("swaplify_token");
     } catch {}
     setUser(null);
+    setActiveView("landing");
   };
+
+  if (user && activeView === "dashboard") {
+    return <Dashboard user={user} apiUrl={API_URL} onLogout={logout} onDiscover={() => setActiveView("landing")} />;
+  }
 
   return <>
     <nav>
@@ -103,6 +111,7 @@ export default function App() {
         <a href="#how-it-works">How it works</a>
         {user ? <>
           <span>Hi, {user.name || user.email}</span>
+          <button className="login" onClick={() => setActiveView("dashboard")}>Dashboard</button>
           <button className="login" onClick={logout}>Log out</button>
         </> : <>
           <button className="login" onClick={() => openAuth("login")}>Log in</button>
