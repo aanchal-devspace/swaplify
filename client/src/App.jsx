@@ -3,19 +3,19 @@ import { useMemo, useState } from "react";
 import { peers } from "./data";
 import PeerCard from "./components/PeerCard";
 
-// ---- Backend settings: change these to match your backend routes ----
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+const API_URL = import.meta.env.VITE_API_URL || "https://swaplify-3.onrender.com";
 const LOGIN_PATH = "/api/users/login";
 const SIGNUP_PATH = "/api/users/register";
-// ----------------------------------------------------------------------
+
 
 export default function App() {
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null);
   const [sent, setSent] = useState(false);
 
-  // Auth state
-  const [authMode, setAuthMode] = useState(null); // null | "login" | "signup"
+  
+  const [authMode, setAuthMode] = useState(null);
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [authError, setAuthError] = useState("");
   const [loading, setLoading] = useState(false);
